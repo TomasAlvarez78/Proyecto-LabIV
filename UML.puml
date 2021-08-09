@@ -1,0 +1,92 @@
+
+@startuml negocio
+
+hide empty methods
+
+Class Producto {
+	-idProducto: int PK
+	-nombre: String
+	-descripcion : String
+	-precio: float
+	-idCategoria: int
+	-cantidadStock: int
+}
+
+Class Categoria {
+	-idCategoria: int PK
+	-nombre: string
+}
+
+Class Compra {
+	-idCompra: int PK
+	-idProveedor: int FK
+	-idDetalleCompra: int FK
+}
+
+Class DetalleCompra {
+	-idDetalleCompra: int PK
+	-idProducto: int FK
+	-cantidad: int
+	-precioCompra: float
+}
+
+Class Carrito {
+	-Id: int PK
+	-usuario: String
+}
+
+Class DetalleCarrito {
+	-idProducto: int PK
+	-idCarrito: int PK
+	-cantidad: int
+	-precioVenta: float
+}
+
+Class Pago {
+	-idPago: int PK
+	-idCarrito: int FK
+	-ModoPago: string
+}
+
+
+Class Venta {
+	-idVenta: int PK
+	-idPago: int FK
+	-modoEnvio: string
+	-precio_total: float
+	-descripcion: string
+}
+
+
+Class Proveedor {
+	-Id: int
+	-nombre: string
+}
+
+'Usuario
+Class Datos_Personales {
+	-Id: int
+	-nombre: string
+	-apellido: string
+	-direccion:string
+	-tel: int
+}
+
+Class Usuario {
+	-Id: int
+	-nombreUsuario: string
+	-contrasenia: string
+	-email: int
+}
+
+Producto "1-n" --> "1" Categoria
+Compra "1" --> "1-n" DetalleCompra
+Usuario "1" --> "0-n" Carrito
+Carrito "1" --> "1-n" DetalleCarrito
+Carrito "1" --> "0-n" Pago
+DetalleCarrito "1" --> "1" Producto
+DetalleCompra "1" --> "1" Producto
+Usuario "1" --> "1" Datos_Personales
+Venta "1" --> "1" Pago
+Compra "1" --> "1" Proveedor
+@enduml

@@ -33,6 +33,15 @@ class DetalleCompra(models.Model):
     cantidad = models.IntegerField()
     precioCompra = models.FloatField()
 
+class Proveedor(models.Model):
+    idProveedor = models.BigIntegerField(primary_key=True, null=False)
+    nombre = models.CharField(null=False, max_length=50)
+
+    class Meta:
+        verbose_name='Proveedor'
+        verbose_name_plural='Proveedores'
+
+
 
 
 

@@ -57,7 +57,6 @@ class Proveedor(models.Model):
 
 
 class Compra(models.Model):
-    idCompra        = models.BigIntegerField(primary_key=True, null=False)
     idProveedor     = models.ForeignKey(Producto,on_delete=models.CASCADE)
     idDetalleCompra = models.ForeignKey(DetalleCompra,on_delete=models.CASCADE)
 
@@ -68,7 +67,6 @@ class Compra(models.Model):
 
 
 class Usuario(models.Model):
-    idUsuario       = models.BigIntegerField(primary_key=True, null=False)
     nombreUsuario   = models.CharField(null=False, max_length=50)
     contrasenia     = models.CharField(null=False, max_length=50)
     email           = models.CharField(null=False, max_length=50)

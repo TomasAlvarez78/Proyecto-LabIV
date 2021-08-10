@@ -57,7 +57,6 @@ class Proveedor(models.Model):
 
 
 class Compra(models.Model):
-    idProveedor     = models.ForeignKey(Producto,on_delete=models.CASCADE)
     idDetalleCompra = models.ForeignKey(DetalleCompra,on_delete=models.CASCADE)
 
     class Meta:

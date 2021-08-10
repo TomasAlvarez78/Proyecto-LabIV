@@ -57,7 +57,6 @@ class Proveedor(models.Model):
 
 
 class Compra(models.Model):
-    idCompra        = models.BigIntegerField(primary_key=True, null=False)
     idProveedor     = models.ForeignKey(Producto,on_delete=models.CASCADE)
     idDetalleCompra = models.ForeignKey(DetalleCompra,on_delete=models.CASCADE)
 

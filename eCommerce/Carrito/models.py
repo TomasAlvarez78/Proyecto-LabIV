@@ -3,7 +3,6 @@ from django.db import models
 # Create your models here.
 
 class Categoria(models.Model):
-    idCategoria     = models.BigIntegerField(primary_key=True,null=False)
     nombre          = models.CharField(null=False,max_length=50)
 
     def __str__(self):
@@ -16,7 +15,6 @@ class Categoria(models.Model):
 
 
 class Producto(models.Model):
-    idProducto      = models.BigIntegerField(primary_key=True,null=False)
     nombre          = models.CharField(null=False,max_length=50)
     descripcion     = models.CharField(null=False,max_length=300)
     precio          = models.FloatField()
@@ -44,7 +42,6 @@ class DetalleCompra(models.Model):
 
 
 class Proveedor(models.Model):
-    idProveedor     = models.BigIntegerField(primary_key=True, null=False)
     nombre          = models.CharField(null=False, max_length=50)
 
     def __str__(self):
@@ -86,9 +83,7 @@ class Usuario(models.Model):
 
 
 class Carrito(models.Model):
-    idCarrito       = models.BigIntegerField(primary_key=True, null=False)
     idUsuario       = models.ForeignKey(Usuario,on_delete=models.CASCADE)
-
     class Meta:
         verbose_name='Carrito'
         verbose_name_plural='Carritos'
@@ -105,8 +100,6 @@ class DetalleCarrito(models.Model):
         verbose_name='DetalleCarrito'
         verbose_name_plural='DetalleCarritos'
 
-
-
 class Pago(models.Model):
     idPago          = models.BigIntegerField(primary_key=True, null=False)
     idCarrito       = models.ForeignKey(Carrito,on_delete=models.CASCADE, primary_key=True)
@@ -117,9 +110,7 @@ class Pago(models.Model):
         verbose_name_plural='Pagos'
 
 
-
 class Venta(models.Model):
-    idVenta         = models.BigIntegerField(primary_key=True, null=False)
     idPago          = models.ForeignKey(Carrito,on_delete=models.CASCADE, primary_key=True)
     modoEnvio       = models.CharField(null=False, max_length=20)
     precioVenta     = models.FloatField()

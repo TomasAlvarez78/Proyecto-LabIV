@@ -1,123 +1,88 @@
 from django.db import models
 from django.db.models import Sum
 class Categoria(models.Model):
-    nombre          = models.CharField(null=False,max_length=50)
+    nombre          = models.CharField(max_length=50)
 
-    def __str__(self):
-        return self.nombre
-
-    class Meta:
-        verbose_name='Categoria'
-        verbose_name_plural='Categorias'
+    def __str__(self) -> str:
+        return super().__str__()
 
 class Producto(models.Model):
-    nombre          = models.CharField(null=False,max_length=50)
-    descripcion     = models.CharField(null=False,max_length=300)
+    nombre          = models.CharField(max_length=50)
+    descripcion     = models.CharField(max_length=300)
     precio          = models.FloatField()
-    ##cantidadStock   = models.FloatField()
-    categoria       = models.ForeignKey(Categoria,on_delete=models.CASCADE,verbose_name='Categoria')
-    @property
-    def stock(self):
-        stockcompra = Actualiza_stock.objects.filter(product=self).aggregate(sum=Sum("monto")).get("sum")
-        stockventa = DetalleCarrito.objects.filter(product=self, cart__confirmed=True).aggregate(sum=Sum("monto")).get("sum")
-        if stockcompra == None:
-            boughtStock = 0
-        if stockventa == None:
-            soldStock = 0
+    cantidadStock   = models.FloatField()
+    categoria       = models.ForeignKey(Categoria,on_delete=models.CASCADE)
+    
+    def __str__(self) -> str:
+        return super().__str__()
 
-        print("{} stockCompra: {}, stockVenta: {}".format(self.title, boughtStock, soldStock))
-        return boughtStock - soldStock
-    def __str__(self):
-        return self.nombre
-
-    class Meta:
-        verbose_name='Producto'
-        verbose_name_plural='Productos'
+   
 
 class DetalleCompra(models.Model):
     producto        = models.ForeignKey(Producto,on_delete=models.CASCADE)
     cantidad        = models.IntegerField()
     precioCompra    = models.FloatField()
 
-    class Meta:
-        verbose_name='DetalleCompra'
-        verbose_name_plural='DetalleCompras'
+    def __str__(self) -> str:
+        return super().__str__()
 
 class Proveedor(models.Model):
-    nombre          = models.CharField(null=False, max_length=50)
+    nombre          = models.CharField  (max_length=50)
 
-    def __str__(self):
-        return self.nombre
+    def __str__(self) -> str:
+        return super().__str__()
 
-    class Meta:
-        verbose_name='Proveedor'
-        verbose_name_plural='Proveedores'
-
+    
 class Compra(models.Model):
-    proveedor     = models.ForeignKey(Producto,on_delete=models.CASCADE)
+    proveedor     = models.ForeignKey(Proveedor,on_delete=models.CASCADE)
     detalleCompra = models.ForeignKey(DetalleCompra,on_delete=models.CASCADE)
 
-    class Meta:
-        verbose_name='Compra'
-        verbose_name_plural='Compras'
+    def __str__(self) -> str:
+        return super().__str__()
 
 class Usuario(models.Model):
-    nombreUsuario   = models.CharField(null=False, max_length=50)
-    contrasenia     = models.CharField(null=False, max_length=50)
-    email           = models.CharField(null=False, max_length=50)
-    telefono        = models.IntegerField(null=False)
-    nombre          = models.CharField(null=False, max_length=50)
-    apellido        = models.CharField(null=False, max_length=50)
-    direccion       = models.CharField(null=False, max_length=50)
+    nombreUsuario   = models.CharField( max_length=50)
+    contrasenia     = models.CharField( max_length=50)
+    email           = models.CharField( max_length=50)
+    telefono        = models.IntegerField()
+    nombre          = models.CharField(max_length=50)
+    apellido        = models.CharField(max_length=50)
+    direccion       = models.CharField(max_length=50)
 
-    def __str__(self):
-        txt = "{0} {1}"
-        return txt.format(self.apellido,self.nombre)
+    def __str__(self) -> str:
+        return super().__str__()
 
-    class Meta:
-        verbose_name='Usuario'
-        verbose_name_plural='Usuarios'
+   
+        
 
 class Carrito(models.Model):
     usuario       = models.ForeignKey(Usuario,on_delete=models.CASCADE)
-    class Meta:
-        verbose_name='Carrito'
-        verbose_name_plural='Carritos'
+    def __str__(self) -> str:
+        return super().__str__()
 
 class DetalleCarrito(models.Model):
     carrito       = models.ForeignKey(Carrito,on_delete=models.CASCADE)
     producto      = models.ForeignKey(Producto,on_delete=models.CASCADE)
     cantidad        = models.IntegerField()
     precioVenta     = models.FloatField()
-
-    class Meta:
-        verbose_name='DetalleCarrito'
-        verbose_name_plural='DetalleCarritos'
+    
+    def __str__(self) -> str:
+        return super().__str__()
+    
 
 class Pago(models.Model):
     carrito       = models.ForeignKey(Carrito,on_delete=models.CASCADE)
-    modoPago        = models.CharField(null=False, max_length=20)
-
-    class Meta:
-        verbose_name='Pago'
-        verbose_name_plural='Pagos'
+    modoPago        = models.CharField( max_length=20)
+    
+    def __str__(self) -> str:
+        return super().__str__()
+    
 
 class Venta(models.Model):
     pago            = models.ForeignKey(Carrito,on_delete=models.CASCADE)
-    modoEnvio       = models.CharField(null=False, max_length=20)
+    modoEnvio       = models.CharField( max_length=20)
     precioVenta     = models.FloatField()
-    descripcion     = models.CharField(null=False, max_length=50)
+    descripcion     = models.CharField(max_length=50)
     
-    class Meta:
-        verbose_name='Venta'
-        verbose_name_plural='Ventas'
-
-class Actualiza_stock(models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    supplier = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    monto = models.SmallIntegerField()
-    precio = models.FloatField()
-    fecha = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return "{}: {} ({})".format(self.producto, self.proveedor, self.monto)
+    def __str__(self) -> str:
+        return super().__str__()

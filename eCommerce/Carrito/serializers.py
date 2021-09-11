@@ -36,23 +36,18 @@ class CompraSerializar(serializers.ModelSerializer):
         "proveedor",
         "detalleCompra")
 
-class UsuarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Usuario
-        fields=("id",
-        "nombreUsuario",  
-        "contrasenia",    
-        "email",          
-        "telefono",        
-        "apellido" ,       
-        "direccion")
-
 class CarritoSerializer(serializers.ModelSerializer):
+
+    # dcarrito = serializers.HyperlinkedRelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     view_name='dcarrito-detail'
+    # )
 
     class Meta:
         model = Carrito
-        fields = ("id",
-                  "usuario")
+        fields = ['id','usuario']
+        # fields = ['id','usuario','dcarrito']
 
 class DetalleCarritoSerializer(serializers.ModelSerializer):
 

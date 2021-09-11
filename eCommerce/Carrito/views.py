@@ -5,7 +5,7 @@ from rest_framework import viewsets,status,permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from .permissions import DefaultPermissions
+from .permissions import DefaultPermissions,CarritoPermissions
 
 # Create your views here.
 class PermissionCategory(permissions.BasePermission):
@@ -94,7 +94,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
         return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
-        print("jejejjejejej")
         if request.user.is_superuser:
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
@@ -112,20 +111,55 @@ class CarritoViewSet(viewsets.ModelViewSet):
 
     queryset = Carrito.objects.all()
     serializer_class = CarritoSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    # permission_classes = []
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [CarritoPermissions]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Carrito.objects.all()
+        return Carrito.objects.filter(usuario=user)
+
+    def create(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
+
 
 class DetallesCarritoViewSet(viewsets.ModelViewSet):
 
     serializer_class = DetalleCarritoSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    # permission_classes = []
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [CarritoPermissions]
 
-    def get_queryset(self):
-        carrito_specs = DetalleCarrito.objects.all()
-        return carrito_specs
+    def create(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
 
-class UsuarioViewSet(viewsets.ModelViewSet):
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = []
+    def destroy(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
+
+
+    # def get_queryset(self):
+    #     carrito_specs = DetalleCarrito.objects.all()
+    #     return carrito_specs

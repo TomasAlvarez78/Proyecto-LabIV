@@ -9,6 +9,5 @@ router.register("categorias", CategoriaViewSet, basename="categorias")
 router.register("productos", ProductoViewSet, basename="productos")
 router.register("carrito", CarritoViewSet, basename="carrito")
 router.register("dcarrito", DetallesCarritoViewSet, basename="dcarrito")
-router.register("usuarios", UsuarioViewSet, basename="usuarios")
 
 urlpatterns = router.urls

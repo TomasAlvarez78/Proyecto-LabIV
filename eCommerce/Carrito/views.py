@@ -1,19 +1,13 @@
 from django.shortcuts import render
-
-# Create your views here.
-
-from django.shortcuts import render
 from .models import *
 from .serializers import *
-from rest_framework import viewsets
-from rest_framework import permissions
+from rest_framework import viewsets,status,permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from .permissions import CategoryPermissions
+from .permissions import DefaultPermissions
+
 # Create your views here.
-
-
 class PermissionCategory(permissions.BasePermission):
     def has_permission(self, request, view):
 
@@ -22,50 +16,97 @@ class PermissionCategory(permissions.BasePermission):
 
         return False
 
+# list -> GET
+# retrieve -> GET con /1 (id)
+# create -> POST
+# destroy -> DELETE
+# update  -> PUT
+# partial-update -> PATCH
 
-class CategoriaViewSet(viewsets.ModelViewSet, PermissionCategory):
-
+class CategoriaViewSet(viewsets.ModelViewSet, DefaultPermissions):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     # authentication_classes = [permissions.IsAuthenticated]
-    permission_classes = [permissions.IsAuthenticated]
-    # permission_classes = []
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [DefaultPermissions]
 
-    def get_queryset(self):
-        """
-        Get the list of items for this view.
-        This must be an iterable, and may be a queryset.
-        Defaults to using `self.queryset`.
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
-        This method should always be used rather than accessing `self.queryset`
-        directly, as `self.queryset` gets evaluated only once, and those results
-        are cached for all subsequent requests.
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-        You may want to override this if you need to provide different
-        querysets depending on the incoming request.
+    def create(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
 
-        (Eg. return a list of items that is specific to the user)
-        """
-        assert self.queryset is not None, (
-            "'%s' should either include a `queryset` attribute, "
-            "or override the `get_queryset()` method."
-            % self.__class__.__name__
-        )
+    def destroy(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
 
-        queryset = self.queryset
-        if isinstance(queryset, QuerySet):
-            # Ensure queryset is re-evaluated on each request.
-            queryset = queryset.all()
-        return queryset
+    def update(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
 
+            if getattr(instance, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+
+            return Response(serializer.data)
+        return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
 
 class ProductoViewSet(viewsets.ModelViewSet):
 
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    # permission_classes = []
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [DefaultPermissions]
 
+    def create(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        print("jejejjejejej")
+        if request.user.is_superuser:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            if getattr(instance, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+
+            return Response(serializer.data)
+        return Response("No tiene permisos suficientes", status=status.HTTP_400_BAD_REQUEST)
 
 class CarritoViewSet(viewsets.ModelViewSet):
 
@@ -74,18 +115,15 @@ class CarritoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     # permission_classes = []
 
-
 class DetallesCarritoViewSet(viewsets.ModelViewSet):
 
     serializer_class = DetalleCarritoSerializer
     permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = []
 
     def get_queryset(self):
         carrito_specs = DetalleCarrito.objects.all()
         return carrito_specs
-
-    # permission_classes = []
-
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()

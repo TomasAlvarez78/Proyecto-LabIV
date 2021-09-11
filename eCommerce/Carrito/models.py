@@ -5,13 +5,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
-
-
 class Categoria(models.Model):
     nombre = models.CharField(max_length=50)
 
     def __str__(self) -> str:
-        return super().__str__()
+        return self.nombre
 
 class Producto(models.Model):
     nombre = models.CharField(max_length=50)
@@ -21,9 +19,11 @@ class Producto(models.Model):
     categoria = models.ForeignKey(Categoria,on_delete=models.CASCADE)
     
     def __str__(self) -> str:
-        return super().__str__()
+        return self.nombre
 
-   
+    class Meta:
+        verbose_name='Producto'
+        verbose_name_plural='Productos'
 
 class DetalleCompra(models.Model):
     producto = models.ForeignKey(Producto,on_delete=models.CASCADE)
@@ -37,7 +37,11 @@ class Proveedor(models.Model):
     nombre = models.CharField  (max_length=50)
 
     def __str__(self) -> str:
-        return super().__str__()
+        return self.nombre
+
+    class Meta:
+        verbose_name='Proveedor'
+        verbose_name_plural='Proveedores'
 
     
 class Compra(models.Model):
@@ -57,13 +61,11 @@ class Usuario(models.Model):
     direccion = models.CharField(max_length=50)
 
     def __str__(self) -> str:
-        return super().__str__()
-
-   
-        
+        return self.nombreUsuario
 
 class Carrito(models.Model):
     usuario = models.ForeignKey(Usuario,on_delete=models.CASCADE)
+
     def __str__(self) -> str:
         return super().__str__()
 
@@ -75,7 +77,6 @@ class DetalleCarrito(models.Model):
     
     def __str__(self) -> str:
         return super().__str__()
-    
 
 class Pago(models.Model):
     carrito = models.ForeignKey(Carrito,on_delete=models.CASCADE)
@@ -83,7 +84,6 @@ class Pago(models.Model):
     
     def __str__(self) -> str:
         return super().__str__()
-    
 
 class Venta(models.Model):
     pago = models.ForeignKey(Carrito,on_delete=models.CASCADE)

@@ -32,7 +32,7 @@ class Producto(models.Model):
         print ("{} stockCompra: {}, stockVenta: {}".format(self.nombre, stockCompra, stockVenta))
         return stockCompra - stockVenta
 
-    stocky = property(getstock)
+    
 
     class Meta:
         verbose_name='Producto'

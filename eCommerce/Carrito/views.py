@@ -6,16 +6,6 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .permissions import DefaultPermissions,CarritoPermissions
-
-# Create your views here.
-class PermissionCategory(permissions.BasePermission):
-    def has_permission(self, request, view):
-
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        return False
-
 # list -> GET
 # retrieve -> GET con /1 (id)
 # create -> POST
@@ -30,15 +20,15 @@ class CategoriaViewSet(viewsets.ModelViewSet, DefaultPermissions):
     # permission_classes = [permissions.IsAuthenticated]
     permission_classes = [DefaultPermissions]
 
-    def list(self, request):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+    # def list(self, request):
+    #     queryset = self.filter_queryset(self.get_queryset())
+    #     page = self.paginate_queryset(queryset)
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         if request.user.is_superuser:
@@ -139,6 +129,7 @@ class CarritoViewSet(viewsets.ModelViewSet):
 
 class DetallesCarritoViewSet(viewsets.ModelViewSet):
 
+    queryset = DetalleCarrito.objects.all()
     serializer_class = DetalleCarritoSerializer
     # permission_classes = [permissions.IsAuthenticated]
     permission_classes = [CarritoPermissions]
@@ -158,8 +149,3 @@ class DetallesCarritoViewSet(viewsets.ModelViewSet):
             self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
-
-
-    # def get_queryset(self):
-    #     carrito_specs = DetalleCarrito.objects.all()
-    #     return carrito_specs

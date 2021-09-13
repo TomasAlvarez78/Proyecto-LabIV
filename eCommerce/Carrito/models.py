@@ -22,17 +22,13 @@ class Producto(models.Model):
         return self.nombre
 
     @property
-    def getstock(self):
-        stockCompra = Compra.objects.filter(producto=self).aggregate(sum=Sum("cantidad")).get("sum")
-        stockVenta = DetalleCarrito.objects.filter(producto=self, Carrito__confirmado=True).aggregate(sum=Sum("cantidad")).get("sum")
-        if stockCompra == None:
-            stockCompra = 0 
-        if stockVenta == None:
-            stockVenta = 0
-        print ("{} stockCompra: {}, stockVenta: {}".format(self.nombre, stockCompra, stockVenta))
+    def stock(self):
+        stockCompra = self.compras.aggregate(sum=Sum("cantidad")).get("sum",0)
+        stockCompra = 0 if not stockCompra else stockCompra
+        stockVenta = self.ventas.filter(carrito__estado=1).aggregate(sum=Sum("cantidad")).get("sum",0)
+        stockVenta = 0 if not stockVenta else stockVenta
+        print ("Prod: {} ===>  stockCompra: {}\n stockVenta: {}".format(self.nombre, stockCompra, stockVenta))
         return stockCompra - stockVenta
-
-    stocky = property(getstock)
 
     class Meta:
         verbose_name='Producto'
@@ -50,7 +46,7 @@ class Proveedor(models.Model):
     
 class Compra(models.Model):
     proveedor = models.ForeignKey(Proveedor,on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto,on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto,on_delete=models.CASCADE,related_name='compras')
     cantidad = models.IntegerField(default=0)
     precioCompra = models.FloatField(default=0)
 
@@ -61,9 +57,12 @@ class Compra(models.Model):
         verbose_name='Compra'
         verbose_name_plural='Compras'
     
+# 0 - Proceso -> No resta Stock
+# 1 - Vendido -> Resta Stock
+# 2 - Cancelado -> No resta Stock
 class Carrito(models.Model):
     usuario = models.ForeignKey(User,on_delete=models.CASCADE)
-    confirmado = models.BooleanField(default=False)
+    estado = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         return f"Carrito de {self.usuario}"
@@ -71,13 +70,13 @@ class Carrito(models.Model):
     @property
     def total(self):
         total = 0
-        for itemCart in DetalleCarrito.objects.filter(cart=self):
-            total += itemCart.price * itemCart.amount
+        for itemCarrito in DetalleCarrito.objects.filter(carrito=self):
+            total += itemCarrito.precioVenta * itemCarrito.cantidad
         return total
 
 class DetalleCarrito(models.Model):
     carrito = models.ForeignKey(Carrito,on_delete=models.CASCADE,related_name='dcarrito')
-    producto = models.ForeignKey(Producto,on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto,on_delete=models.CASCADE,related_name='ventas')
     cantidad  = models.IntegerField(default=0)
     precioVenta = models.FloatField(default=0)
     

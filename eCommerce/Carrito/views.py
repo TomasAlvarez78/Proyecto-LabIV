@@ -1,3 +1,4 @@
+from django.db.models.query_utils import Q
 from django.shortcuts import render
 from .models import *
 from .serializers import *
@@ -64,7 +65,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
 
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
-    # permission_classes = [permissions.IsAuthenticated]
     permission_classes = [DefaultPermissions]
 
     def create(self, request, *args, **kwargs):
@@ -101,7 +101,6 @@ class CarritoViewSet(viewsets.ModelViewSet):
 
     queryset = Carrito.objects.all()
     serializer_class = CarritoSerializer
-    # permission_classes = [permissions.IsAuthenticated]
     permission_classes = [CarritoPermissions]
 
     def get_queryset(self):
@@ -131,16 +130,40 @@ class DetallesCarritoViewSet(viewsets.ModelViewSet):
 
     queryset = DetalleCarrito.objects.all()
     serializer_class = DetalleCarritoSerializer
-    # permission_classes = [permissions.IsAuthenticated]
     permission_classes = [CarritoPermissions]
 
+    # No poder duplicar productos
+    # No poder comprar productos sin stock
+
+    # def create(self, request, *args, **kwargs):
+    #     if request.user.is_authenticated:
+    #         print(f"CANTIDAD: {request.data['cantidad']}")
+
+    #         items = DetalleCarrito.object.filter(carrito=request.data['carrito'])
+            
+    #         if (items.producto == request.data['producto']):
+            
+    #         serializer = self.get_serializer(data=request.data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_create(serializer)
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    #     return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
+
     def create(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        user = request.user
+        # Si no tiene carrito que devuelva mensaje
+        if user.is_authenticated:
+            producto = request.data['producto']
+            cantidad = request.data['cantidad']
+            print(request.data)
+
+            item, created = DetalleCarrito.objects.get_or_create(producto=producto,carrito=Carrito.objects.get(usuario=user.id))
+            item.cantidad += int(cantidad)
+            print (item.cantidad)
+
+            item.save()
+            return Response(status=status.HTTP_200_OK, data=request.data)
         return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):

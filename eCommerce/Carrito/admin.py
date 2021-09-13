@@ -10,3 +10,4 @@ admin.site.register(Carrito)
 admin.site.register(DetalleCarrito)
 
 admin.site.register(Compra)
+admin.site.register(Proveedor)

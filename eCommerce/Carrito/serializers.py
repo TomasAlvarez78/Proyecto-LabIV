@@ -9,9 +9,15 @@ class CategoriaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductoSerializer(serializers.ModelSerializer):
+    
+    stock = serializers.SerializerMethodField()
+
     class Meta:
         model = Producto
         fields = '__all__'
+
+    def get_stock(self,instance):
+        return instance.stock
 
 class ProveedorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +31,8 @@ class CompraSerializar(serializers.ModelSerializer):
 
 class CarritoSerializer(serializers.ModelSerializer):
 
+    total = serializers.SerializerMethodField()
+
     dcarrito = serializers.HyperlinkedRelatedField(
         many=True,
         read_only=True,
@@ -34,7 +42,10 @@ class CarritoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carrito
         # fields = ['id','usuario']
-        fields = ['id','usuario','confirmado','dcarrito']
+        fields = '__all__'
+    
+    def get_total(self,instance):
+        return instance.total
 
 class DetalleCarritoSerializer(serializers.ModelSerializer):
     class Meta:

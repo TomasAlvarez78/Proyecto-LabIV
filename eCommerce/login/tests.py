@@ -15,10 +15,21 @@ class UserTestCase(TestCase):
                     password='tomii123',
                     password2='tomii123',
                     email='tomasito@gmail.com',
-                    first_name='Tomás',
+                    first_name='Tomas',
                     last_name='Alvarez')
         response = self.browser.post('/register/', user)
         self.assertEqual(response.status_code, 201)
+
+    def test_error_add_user(self):
+        user = dict(username='eltomas',
+                    password='tomii123',
+                    password2='tomii12',
+                    email='tomasito@gmail.com',
+                    first_name='Tomas',
+                    last_name='Alvarez')
+        response = self.browser.post('/register/', user)
+        self.assertEqual(response.status_code, 400)
+
 
     # def test_change_email_user(self):
     #     email = dict(email='tomasito123@gmail.com')

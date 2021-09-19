@@ -27,8 +27,8 @@ class Producto(models.Model):
         stockCompra = 0 if not stockCompra else stockCompra
         stockVenta = self.ventas.filter(carrito__estado=1).aggregate(sum=Sum("cantidad")).get("sum",0)
         stockVenta = 0 if not stockVenta else stockVenta
-        print ("Prod: {} ===>  stockCompra: {}\n stockVenta: {}".format(self.nombre, stockCompra, stockVenta))
-        return stockCompra - stockVenta
+        # print ("Prod: {} ===>  stockCompra: {}\n stockVenta: {}".format(self.nombre, stockCompra, stockVenta))
+        return stockCompra - stockVenta 
 
     class Meta:
         verbose_name='Producto'
@@ -73,6 +73,14 @@ class Carrito(models.Model):
         for itemCarrito in DetalleCarrito.objects.filter(carrito=self):
             total += itemCarrito.precioVenta * itemCarrito.cantidad
         return total
+    
+    def get_estado(self):
+        if self.estado == 1:
+            return "Cerrado"
+        elif self.estado == 2:
+            return "Cancelado"
+        return "En proceso"
+
 
 class DetalleCarrito(models.Model):
     carrito = models.ForeignKey(Carrito,on_delete=models.CASCADE,related_name='dcarrito')

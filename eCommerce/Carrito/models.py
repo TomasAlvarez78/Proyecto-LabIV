@@ -63,6 +63,7 @@ class Compra(models.Model):
 class Carrito(models.Model):
     usuario = models.ForeignKey(User,on_delete=models.CASCADE)
     estado = models.IntegerField(default=0)
+    #validators=[MinValueValidator(0), MaxValueValidator(2)]
 
     def __str__(self) -> str:
         return f"Carrito de {self.usuario}"

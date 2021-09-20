@@ -21,9 +21,10 @@ class UserTestCase(TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_error_add_user(self):
+        # Password field didn't match
         user = dict(username='eltomas',
                     password='tomii123',
-                    password2='tomii12',
+                    password2='tomii1234',
                     email='tomasito@gmail.com',
                     first_name='Tomas',
                     last_name='Alvarez')

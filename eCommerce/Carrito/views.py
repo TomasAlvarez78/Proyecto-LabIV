@@ -110,12 +110,24 @@ class CarritoViewSet(viewsets.ModelViewSet):
         return Carrito.objects.filter(usuario=user)
 
     def create(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        user = request.user
+        if user.is_authenticated:
+            created = Carrito.objects.create(usuario=user)
+            created.save()
+            return Response("Nuevo carrito creado", status=status.HTTP_201_CREATED)
+        return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated:
+            carts = Carrito.objects.filter(usuario=user)
+            if carts:
+                last_cart = carts.last()
+            if last_cart.estado == 0:
+                Carrito.objects.filter(pk=last_cart.id).update(estado=1)
+                return Response("Se cerro el ultimo carrito", status=status.HTTP_202_ACCEPTED)
+            else:
+                return Response("Este carrito ya ha sido cerrado", status=status.HTTP_400_BAD_REQUEST)        
         return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
@@ -127,28 +139,18 @@ class CarritoViewSet(viewsets.ModelViewSet):
 
 
 class DetallesCarritoViewSet(viewsets.ModelViewSet):
-
     queryset = DetalleCarrito.objects.all()
     serializer_class = DetalleCarritoSerializer
     permission_classes = [CarritoPermissions]
 
-    # No poder duplicar productos
-    # No poder comprar productos sin stock
-
-    # def create(self, request, *args, **kwargs):
-    #     if request.user.is_authenticated:
-    #         print(f"CANTIDAD: {request.data['cantidad']}")
-
-    #         items = DetalleCarrito.object.filter(carrito=request.data['carrito'])
-            
-    #         if (items.producto == request.data['producto']):
-            
-    #         serializer = self.get_serializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         self.perform_create(serializer)
-    #         headers = self.get_success_headers(serializer.data)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #     return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return DetalleCarrito.objects.all()
+        last_cart = Carrito.objects.filter(usuario=user).last()
+        if last_cart:
+            return DetalleCarrito.objects.filter(carrito=last_cart)
+        return self.queryset.none()
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -156,14 +158,19 @@ class DetallesCarritoViewSet(viewsets.ModelViewSet):
         if user.is_authenticated:
             producto = request.data['producto']
             cantidad = request.data['cantidad']
-            print(request.data)
+            precioVenta = request.data['precioVenta']
 
-            item, created = DetalleCarrito.objects.get_or_create(producto=producto,carrito=Carrito.objects.get(usuario=user.id))
-            item.cantidad += int(cantidad)
-            print (item.cantidad)
-
-            item.save()
-            return Response(status=status.HTTP_200_OK, data=request.data)
+            itemfilter = Producto.objects.get(id=producto)
+            if (itemfilter.stock >= cantidad):
+                last_cart = Carrito.objects.filter(usuario=user.id).last()
+                item, created = DetalleCarrito.objects.get_or_create(producto=itemfilter,carrito=last_cart)
+                if item:
+                    item.cantidad += int(cantidad)
+                    item.precioVenta += precioVenta
+                    item.save()
+                return Response(status=status.HTTP_200_OK, data=request.data)
+            else:
+                return Response("No hay suficiente stock de un producto", status=status.HTTP_400_BAD_REQUEST)
         return Response("No es un cliente autenticado", status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):

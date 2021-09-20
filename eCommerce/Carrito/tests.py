@@ -72,6 +72,9 @@ class CarritoTestCase(TestCase):
         self.assertEqual(self.producto1.stock,10)
         self.assertEqual(self.producto2.stock,20)
 
+    def test_shop_cart(self):
+        self.assertEqual
+
     # def test_stock_prod_carrito(self):
     #     self.carrito.estado=1
     #     self.carrito.save()

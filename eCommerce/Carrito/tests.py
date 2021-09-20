@@ -58,17 +58,6 @@ class CarritoTestCase(TestCase):
                                         precioVenta = 200
                                         )
 
-        self.categoria1.save()
-        self.producto1.save()
-        self.producto2.save()
-        self.proveedor.save()
-        self.compra_producto1.save()
-        self.compra_producto2.save()
-        self.carrito.save()
-        self.det_carrito1.save()
-        self.det_carrito2.save()
-
-
         response = self.browser.post('/login/', {'email': 'tomastest@gmail.com','username':'tomastest', 'password': 'tomastest123'})
         responde_js = json.loads(response.content)
         self.browser.defaults['HTTP_AUTHORIZATION'] ='Bearer {}'.format(responde_js.get('access'))
@@ -81,12 +70,13 @@ class CarritoTestCase(TestCase):
                         
     # Debido a que el carrito no esta cerrado, el stock de los prod, siguen siendo
     # Iguales a los de la compra original                        
+    # No es necesario :c
     def test_stock_prod(self):
         self.assertEqual(self.producto1.stock,10)
         self.assertEqual(self.producto2.stock,20)
 
     def test_stock_prod_carrito(self):
-        self.carrito.estado=1
+        self.carrito.estado = 1
         self.carrito.save()
         self.producto1.refresh_from_db()
         self.producto2.refresh_from_db()

@@ -5,6 +5,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator,MaxValueValidator
+
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=50)
@@ -57,13 +60,15 @@ class Compra(models.Model):
         verbose_name='Compra'
         verbose_name_plural='Compras'
     
-# 0 - Proceso -> No resta Stock
+# 0 - En proceso -> No resta Stock
 # 1 - Vendido -> Resta Stock
 # 2 - Cancelado -> No resta Stock
 class Carrito(models.Model):
+    STATUS = ((0,'En proceso'),
+            (1,'Vendido'),
+            (2,'Cancelado'))
     usuario = models.ForeignKey(User,on_delete=models.CASCADE)
-    estado = models.IntegerField(default=0)
-    #validators=[MinValueValidator(0), MaxValueValidator(2)]
+    estado = models.IntegerField(default=0,choices=STATUS,validators=[MinValueValidator(0), MaxValueValidator(2)])
 
     def __str__(self) -> str:
         return f"Carrito de {self.usuario}"
